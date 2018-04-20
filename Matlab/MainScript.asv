@@ -1,0 +1,20 @@
+% Change Directory to Locationn of This mfile
+[pathstr,name,ext] = fileparts(which(mfilename));
+cd(pathstr);
+
+invEffMatrix = dlmread('..\Test Files\invEffMatrix.txt', '\t')*0.01;
+invEffPower = dlmread('..\Test Files\invEffPower.txt', '\t');
+invEffVoltage = dlmread('..\Test Files\invEffVoltage.txt', '\t');
+invParams = dlmread('..\Test Files\invParams.txt', '\t');
+
+dcPower = dlmread('..\Test Files\dcPower.txt', '\t');
+
+relativeSystemDCPowerChange = systemPower - invDCRating;
+relativeSystemDCPowerChange(relativeSystemDCPowerChange>0) = 0;
+mpptEfficiency = invTrackMaxEff - relativeSystemDCPowerChange*invTrackRelativeEff;
+trackedSystemPower = systemPower.*mpptEfficiency;
+trackedSystemVoltage = modVmpp*numModulesPerString*vTempFactor;
+parasiticFilteredPower = trackedSystemPower;
+parasiticFilteredPower(parasiticFilteredPower<invParasiticPower) = 0;
+invEfficiency = interp2(invEffPower,invEffVoltage,invEffMatrix,parasiticFilteredPower,trackedSystemVoltage, 'linear');
+systemACPower = invEfficiency.*parasiticFilteredPower;
