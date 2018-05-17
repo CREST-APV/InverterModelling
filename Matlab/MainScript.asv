@@ -50,24 +50,41 @@ relativeSystemDCPowerChange(relativeSystemDCPowerChange>0) = -1*relativeSystemDC
 % % Determine Algorthmic Efficiency (Approximation for Averaged Input Data)
 mpptEfficiency = inverter.TrackMaxEff - relativeSystemDCPowerChange*inverter.TrackRelativeEff;
 % Calculated MPPT Tracked System Power
-trackedSystemPower = stringPower.*mpptEfficiency;
+trackedSystemPower = stringOutput.pmpp.*mpptEfficiency;
+
 
 %% Visualise MPPT Tracking Efficiencies
-figMPPTEffs = figure('units','normalized','outerposition',[0 0 1 1], 'color', [1 1 1], 'name', 'PV DC Output');
+figMPPTEffs = figure('units','normalized','outerposition',[0 0 1 1], 'color', [1 1 1], 'name', 'MPPT Efficiencies');
 histogram(mpptEfficiency);
 xlabel('Efficiency');
 ylabel('Frequency [h]');
 % screen2jpeg('..\Output Files\figMPPTEffs.jpg');
 
+
 %% Calculate AC Power Output
 % Deduct Parasitic Power
 parasiticFilteredPower = trackedSystemPower;
-parasiticFilteredPower(parasiticFilteredPower<invParasiticPower) = 0;
+parasiticFilteredPower(parasiticFilteredPower<inverter.ParasiticPower) = 0;
 % Interpolate AC Efficiencies from Inverter Specification
-inversionEfficiencies = interp2(inverter.Power,inverter.Voltage,invEffMatrix,parasiticFilteredPower,trackedSystemVoltage, 'linear');
+inversionEfficiencies = interp2(inverter.Power,inverter.Voltage,inverter.EfficiencyMatrix,parasiticFilteredPower,stringOutput.vmpp, 'linear');
 inversionEfficiencies(inversionEfficiencies<0) = 0;
 % Calculate AC Power Output
 systemACPower = inversionEfficiencies.*parasiticFilteredPower;
 
 % Calculate Full AC Power Efficiencies
-acEfficiencies = stringOutput.pmpp./systemACPower;
+acEfficiencies = systemACPower./stringOutput.pmpp;
+
+%% Visualise PV to AC Power Efficiencies
+figACEffs = figure('units','normalized','outerposition',[0 0 1 1], 'color', [1 1 1], 'name', 'PV DC to AC Efficiencies');
+histogram(acEfficiencies);
+xlabel('Efficiency');
+ylabel('Frequency [h]');
+% screen2jpeg('..\Output Files\figACEffs.jpg');
+
+
+%% PV Power to AC Efficiency Correlation
+figP = figure('units','normalized','outerposition',[0 0 1 1], 'color', [1 1 1], 'name', 'PV DC to AC Efficiencies');
+histogram(acEfficiencies);
+xlabel('Efficiency');
+ylabel('Frequency [h]');
+% screen2jpeg('..\Output Files\figACEffs.jpg');

@@ -52,12 +52,14 @@ mpptEfficiency = inverter.TrackMaxEff - relativeSystemDCPowerChange*inverter.Tra
 % Calculated MPPT Tracked System Power
 trackedSystemPower = stringOutput.pmpp.*mpptEfficiency;
 
+
 %% Visualise MPPT Tracking Efficiencies
 figMPPTEffs = figure('units','normalized','outerposition',[0 0 1 1], 'color', [1 1 1], 'name', 'MPPT Efficiencies');
 histogram(mpptEfficiency);
 xlabel('Efficiency');
 ylabel('Frequency [h]');
 % screen2jpeg('..\Output Files\figMPPTEffs.jpg');
+
 
 %% Calculate AC Power Output
 % Deduct Parasitic Power
@@ -78,3 +80,11 @@ histogram(acEfficiencies);
 xlabel('Efficiency');
 ylabel('Frequency [h]');
 % screen2jpeg('..\Output Files\figACEffs.jpg');
+
+
+%% PV Power to AC Efficiency Correlation
+figDCACCor = figure('units','normalized','outerposition',[0 0 1 1], 'color', [1 1 1], 'name', 'DC Power Against AC Efficiencies');
+scatter(stringOutput.pmpp, acEfficiencies);
+xlabel('DC Power [W]');
+ylabel('Inverted Efficiency %');
+% screen2jpeg('..\Output Files\figDCACCor.jpg');
